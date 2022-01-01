@@ -15,9 +15,11 @@ Since each platform is a little different, and Linux changes often, please visit
 Once that's done, from your command line run the following command: 
 
 sudo pip3 install rpi_ws281x adafruit-circuitpython-neopixel sudo python3 -m pip install --force-reinstall adafruit-blinka
+
 If your default Python is version 3 you may need to run 'pip' instead. Just make sure you aren't trying to use CircuitPython on Python 2.x, it isn't supported!
 
 setting up script and service:
+
 Copy “monitor.service” to /etc/systemd/system/
 Copy “monitoring.py” to /home/pi/neopixels/ (you need to create neopixels directory)
 
