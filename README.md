@@ -23,6 +23,8 @@ setting up script and service:
 Copy “monitor.service” to /etc/systemd/system/
 Copy “monitoring.py” to /home/pi/neopixels/ (you need to create neopixels directory)
 
-When files will be set up on rpi run commands: 
+When files will be set up on rpi run commands:
+
 systemctl enable monitor
+
 systemctl start monitor
