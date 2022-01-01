@@ -28,7 +28,7 @@ class StatusMonitor:
         # RING ORDER 3 - status, 2 - extruder temp, 1 - heat bed temp
         self.ring_order = [3, 2, 1]
         # GPIO PORT
-        self.pixel_pin = board.D21
+        self.pixel_pin = board.D18
         self.status = None
         self.bed_temp = 0
         self.bed_given = 0
