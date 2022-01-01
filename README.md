@@ -34,3 +34,6 @@ When files will be set up on rpi run commands:
 systemctl enable monitor
 
 systemctl start monitor
+
+
+HARDWARE SETUP is described in connection_diag.jpg
