@@ -103,7 +103,7 @@ class StatusMonitor:
 
             progress_color = self.status_to_color_dict[self.status]
             for i in range(16):
-                               if self.bed_temp <= self.bed_given:
+                if self.bed_temp <= self.bed_given:
                     if i <= self.bed_temp:
                         self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_color
                     elif i <= self.bed_given:
