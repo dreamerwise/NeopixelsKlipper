@@ -103,41 +103,40 @@ class StatusMonitor:
 
             progress_color = self.status_to_color_dict[self.status]
             for i in range(16):
-                if self.bed_temp <= self.bed_given:
+                               if self.bed_temp <= self.bed_given:
                     if i <= self.bed_temp:
-                        self.pixels[((15 - i + self.bed_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = self.bed_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_color
                     elif i <= self.bed_given:
-                        self.pixels[((15 - i + self.bed_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = self.bed_heating_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_heating_color
                     else:
-                        self.pixels[((15 - i + self.bed_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (0, 0, 0)
                 else:
                     if i <= self.bed_given:
-                        self.pixels[((15 - i + self.bed_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = self.bed_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_color
                     elif i <= self.bed_temp:
-                        self.pixels[((15 - i + self.bed_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = self.bed_cooling_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_cooling_color
                     else:
-                        self.pixels[((15 - i + self.bed_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (0, 0, 0)
 
                 if self.extruder_temp <= self.extruder_given:
                     if i <= self.extruder_temp:
-                        self.pixels[((15 - i + self.extruder_offset) % 16) + ((self.ring_order[1] - 1) * 16)] = self.extruder_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_color
                     elif i <= self.extruder_given:
-                        self.pixels[((15 - i + self.extruder_offset) % 16) + ((self.ring_order[1] - 1) * 16)] = self.extruder_heating_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_heating_color
                     else:
-                        self.pixels[((15 - i + self.extruder_offset) % 16) + ((self.ring_order[1] - 1) * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (0, 0, 0)
                 else:
                     if i <= self.extruder_given:
-                        self.pixels[((15 - i + self.extruder_offset) % 16) + ((self.ring_order[1] - 1) * 16)] = self.extruder_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_color
                     elif i <= self.extruder_temp:
-                        self.pixels[((15 - i + self.extruder_offset) % 16) + ((self.ring_order[1] - 1) * 16)] = self.extruder_cooling_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_cooling_color
                     else:
-                        self.pixels[((15 - i + self.extruder_offset) % 16) + ((self.ring_order[1] - 1) * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (0, 0, 0)
 
                 if i <= self.progress:
-                    self.pixels[
-                        ((15 - i + self.progress_offset) % 16) + ((self.ring_order[2] - 1) * 16)] = progress_color
+                    self.pixels[((15 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = progress_color
                 else:
-                    self.pixels[((15 - i + self.progress_offset) % 16) + ((self.ring_order[0] - 1) * 16)] = (0, 0, 0)
+                    self.pixels[((15 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = (0, 0, 0)
             # print (self.pixels)
             self.pixels.show()
 
