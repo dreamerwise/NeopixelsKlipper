@@ -20,15 +20,16 @@ class StatusMonitor:
         self.extruder_heating_color = (100, 0, 0)
         self.extruder_cooling_color = (255, 100, 0)
         # OFFSET Values for rings:
-        self.bed_offset = 0
-        self.extruder_offset = 13
-        self.progress_offset = 7
+        self.ring_one_offset = 0
+        self.ring_two_offset = 13
+        self.ring_tree_offset = 7
         # ANIMATION SPEED
         self.time_interval = 0.03
-        # RING ORDER 3 - status, 2 - extruder temp, 1 - heat bed temp
-        self.ring_order = [3, 2, 1]
+        # RING ORDER 2 - status, 1 - extruder temp, 0 - heat bed temp
+        self.ring_order = [2, 1, 0]
         # GPIO PORT
-        self.pixel_pin = board.D18
+        self.offsets = [self.ring_one_offset, self.ring_two_offset, self.ring_tree_offset]
+        self.pixel_pin = board.D21
         self.status = None
         self.bed_temp = 0
         self.bed_given = 0
