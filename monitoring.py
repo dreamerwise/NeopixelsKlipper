@@ -97,8 +97,9 @@ class StatusMonitor:
 
     def update_pixels(self):
 
-        if self.extruder_temp != 0 and self.t.is_alive():
-            self.t.terminate()
+        if self.extruder_temp != 0:
+            if self.t.is_alive():
+                self.t.terminate()
 
             progress_color = self.status_to_color_dict[self.status]
             for i in range(16):
