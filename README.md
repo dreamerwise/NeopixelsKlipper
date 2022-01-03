@@ -26,14 +26,14 @@ If your default Python is version 3 you may need to run 'pip' instead. Just make
 
 SETTING UP SCRIPT AND SERVICE:
 
-Copy “monitor.service” to /etc/systemd/system/
+Copy “klipper_monitor.service” to /etc/systemd/system/
 Copy “monitoring.py” to /home/pi/neopixels/ (you need to create neopixels directory)
 
 When files will be set up on rpi run commands:
 
-systemctl enable monitor
+systemctl enable klipper_monitor
 
-systemctl start monitor
+systemctl start klipper_monitor
 
 
 HARDWARE SETUP is described in connection_diag.jpg
