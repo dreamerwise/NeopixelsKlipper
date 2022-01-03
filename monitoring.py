@@ -29,7 +29,7 @@ class StatusMonitor:
         self.ring_order = [2, 1, 0]
         # GPIO PORT
         self.offsets = [self.ring_one_offset, self.ring_two_offset, self.ring_tree_offset]
-        self.pixel_pin = board.D21
+        self.pixel_pin = board.D18
         self.status = None
         self.bed_temp = 0
         self.bed_given = 0
