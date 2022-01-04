@@ -6,11 +6,14 @@ import json
 import board
 import neopixel
 import multiprocessing
+import logging
 
 
 class StatusMonitor:
 
     def __init__(self):
+
+        logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
         # COLOR SETTINGS:
         self.bed_color = (0, 0, 255)
@@ -62,6 +65,7 @@ class StatusMonitor:
         self.t = multiprocessing.Process(target=waiting, args=(self.time_interval, self.pixels))
 
     def check_status(self):
+
         try:
             printer = requests.get("http://localhost:7125/api/printer")
             printer_dict = printer.json()
@@ -75,14 +79,19 @@ class StatusMonitor:
             self.bed_given = calulate_pos(80, bed_given, 23)
 
         except:
-            print("Moonraker api not responding")
+            logging.info("Moonraker printer api not responding")
 
         try:
             job = requests.get("http://localhost:7125/api/job")
-            job_progerss = requests.get("http://localhost:7125/printer/objects/query?virtual_sdcard=progress")
             job_dict = job.json()
-            job_progerss_dict = job_progerss.json()
             self.status = str(job_dict['state'])
+
+        except:
+            logging.info("Moonraker job api not responding")
+
+        try:
+            job_progerss = requests.get("http://localhost:7125/printer/objects/query?virtual_sdcard=progress")
+            job_progerss_dict = job_progerss.json()
             progress = str(job_progerss_dict['result']['status']['virtual_sdcard']['progress'])
             if progress == "0.0":
                 self.progress = 16
@@ -90,8 +99,7 @@ class StatusMonitor:
                 self.progress = float(progress) * 16
 
         except:
-            print("Moonraker api not responding")
-            print(self.extruder_temp, self.bed_temp, self.progress, self.status)
+            logging.info("Moonraker printer object not responding")
 
         if self.extruder_temp == 0 and not self.t.is_alive():
             self.t.start()
