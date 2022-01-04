@@ -7,7 +7,7 @@ Description=Starts Monitor on startup
 Type=simple
 User=root
 StandardOutput=append:/var/log/klipper_monitoring.log
-ExecStart=python /home/pi/neopixels/klipper_monitoring.py
+ExecStart=python /home/pi/neopixels/monitoring.py
 Restart=always
 
 [Install]
