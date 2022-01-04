@@ -4,15 +4,7 @@ BLV mgn cube style of neopixel rings for klipper
 
 CONFIG:
 
-lines 16 till 21 contains rgb values of colors
-
-lines 23 till 25 contains offset values to set up firs led in pixel ring
-
-line 27 contains time interval to set up animation speed
-
-line 29 contains ring order
-
-line 31 contains configuration of GPIO pin used for communication
+monitoring.cfg contains confuguration like basic color sellection, order of rings and offsets for first led and GPIO pin in usage
 
 SETUP
 
@@ -27,7 +19,7 @@ If your default Python is version 3 you may need to run 'pip' instead. Just make
 SETTING UP SCRIPT AND SERVICE:
 
 Copy “klipper_monitor.service” to /etc/systemd/system/
-Copy “monitoring.py” to /home/pi/neopixels/ (you need to create neopixels directory)
+Copy “monitoring.py” and "monitoring.cfg" to /home/pi/neopixels/ (you need to create neopixels directory)
 
 When files will be set up on rpi run commands:
 
