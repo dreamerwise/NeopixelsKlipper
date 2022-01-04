@@ -7,32 +7,38 @@ import board
 import neopixel
 import multiprocessing
 import logging
+from configparser import ConfigParser
 
 
 class StatusMonitor:
 
     def __init__(self):
 
-        logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+        logging.basicConfig(format='%(asctime)s, %(levelname)s - %(message)s')
 
-        # COLOR SETTINGS:
-        self.bed_color = (0, 0, 255)
-        self.bed_heating_color = (0, 0, 100)
-        self.bed_cooling_color = (0, 100, 255)
-        self.extruder_color = (255, 0, 0)
-        self.extruder_heating_color = (100, 0, 0)
-        self.extruder_cooling_color = (255, 100, 0)
-        # OFFSET Values for rings:
-        self.ring_one_offset = 0
-        self.ring_two_offset = 13
-        self.ring_tree_offset = 7
-        # ANIMATION SPEED
-        self.time_interval = 0.03
-        # RING ORDER 2 - status, 1 - extruder temp, 0 - heat bed temp
-        self.ring_order = [2, 1, 0]
-        # GPIO PORT
-        self.offsets = [self.ring_one_offset, self.ring_two_offset, self.ring_tree_offset]
-        self.pixel_pin = board.D18
+        config = ConfigParser()
+        configFile = "/home/pi/neopixels/monitoring.cfg"
+        config.read(configFile)
+        try:
+            self.bed_color = tuple(map(int, (config.get('Bed', 'main_color')).split(',')))
+            self.bed_heating_color = tuple(map(int, (config.get('Bed', 'heating_color')).split(',')))
+            self.bed_cooling_color = tuple(map(int, (config.get('Bed', 'cooling_color')).split(',')))
+            self.extruder_color = tuple(map(int, (config.get('Extruder', 'main_color')).split(',')))
+            self.extruder_heating_color = tuple(map(int, (config.get('Extruder', 'heating_color')).split(',')))
+            self.extruder_cooling_color = tuple(map(int, (config.get('Extruder', 'cooling_color')).split(',')))
+            self.offsets = [int(config.get('Rings', 'first_offset')),
+                            int(config.get('Rings', 'second_offset')),
+                            int(config.get('Rings', 'third_offset'))]
+            self.time_interval = float(config.get('Animation', 'time_interval'))
+            self.ring_order = list(map(int, (config.get('Rings', 'order').split(','))))
+            pin_selector = [board.D10, board.D12, board.D18, board.D21]
+            pin_enumerator = ["10", "12", "18", "21"]
+            self.pixel_pin = pin_selector[pin_enumerator.index(config.get('GPIO', 'communincation_pin'))]
+
+        except:
+            logging.error("missing configuration")
+            exit(1)
+
         self.status = None
         self.bed_temp = 0
         self.bed_given = 0
@@ -79,7 +85,7 @@ class StatusMonitor:
             self.bed_given = calulate_pos(80, bed_given, 23)
 
         except:
-            logging.info("Moonraker printer api not responding")
+            logging.warning("Moonraker printer api not responding")
 
         try:
             job = requests.get("http://localhost:7125/api/job")
@@ -87,7 +93,7 @@ class StatusMonitor:
             self.status = str(job_dict['state'])
 
         except:
-            logging.info("Moonraker job api not responding")
+            logging.warning("Moonraker job api not responding")
 
         try:
             job_progerss = requests.get("http://localhost:7125/printer/objects/query?virtual_sdcard=progress")
@@ -99,7 +105,7 @@ class StatusMonitor:
                 self.progress = float(progress) * 16
 
         except:
-            logging.info("Moonraker printer object not responding")
+            logging.warning("Moonraker printer object not responding")
 
         if self.extruder_temp == 0 and not self.t.is_alive():
             self.t.start()
@@ -114,38 +120,52 @@ class StatusMonitor:
             for i in range(16):
                 if self.bed_temp <= self.bed_given:
                     if i <= self.bed_temp:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
+                                    self.ring_order[0] * 16)] = self.bed_color
                     elif i <= self.bed_given:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_heating_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
+                                    self.ring_order[0] * 16)] = self.bed_heating_color
                     else:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (
+                        0, 0, 0)
                 else:
                     if i <= self.bed_given:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
+                                    self.ring_order[0] * 16)] = self.bed_color
                     elif i <= self.bed_temp:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = self.bed_cooling_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
+                                    self.ring_order[0] * 16)] = self.bed_cooling_color
                     else:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (
+                        0, 0, 0)
 
                 if self.extruder_temp <= self.extruder_given:
                     if i <= self.extruder_temp:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
+                                    self.ring_order[1] * 16)] = self.extruder_color
                     elif i <= self.extruder_given:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_heating_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
+                                    self.ring_order[1] * 16)] = self.extruder_heating_color
                     else:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (
+                        0, 0, 0)
                 else:
                     if i <= self.extruder_given:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
+                                    self.ring_order[1] * 16)] = self.extruder_color
                     elif i <= self.extruder_temp:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = self.extruder_cooling_color
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
+                                    self.ring_order[1] * 16)] = self.extruder_cooling_color
                     else:
-                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (0, 0, 0)
+                        self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (
+                        0, 0, 0)
 
                 if i <= self.progress:
-                    self.pixels[((15 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = progress_color
+                    self.pixels[
+                        ((23 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = progress_color
                 else:
-                    self.pixels[((15 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = (0, 0, 0)
+                    self.pixels[((23 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = (
+                    0, 0, 0)
             # print (self.pixels)
             self.pixels.show()
 
