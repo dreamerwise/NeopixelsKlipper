@@ -20,16 +20,20 @@ class StatusMonitor:
         configFile = "/home/pi/neopixels/monitoring.cfg"
         config.read(configFile)
         try:
+            self.bed_min = config.getint('Bed', 'min_temp')
+            self.bed_max = config.getint('Bed', 'max_temp')
             self.bed_color = tuple(map(int, (config.get('Bed', 'main_color')).split(',')))
             self.bed_heating_color = tuple(map(int, (config.get('Bed', 'heating_color')).split(',')))
             self.bed_cooling_color = tuple(map(int, (config.get('Bed', 'cooling_color')).split(',')))
+            self.extruder_min = config.getint('Extruder', 'min_temp')
+            self.extruder_max = config.getint('Extruder', 'max_temp')
             self.extruder_color = tuple(map(int, (config.get('Extruder', 'main_color')).split(',')))
             self.extruder_heating_color = tuple(map(int, (config.get('Extruder', 'heating_color')).split(',')))
             self.extruder_cooling_color = tuple(map(int, (config.get('Extruder', 'cooling_color')).split(',')))
-            self.offsets = [int(config.get('Rings', 'first_offset')),
-                            int(config.get('Rings', 'second_offset')),
-                            int(config.get('Rings', 'third_offset'))]
-            self.time_interval = float(config.get('Animation', 'time_interval'))
+            self.offsets = [config.getint('Rings', 'first_offset'),
+                            config.getint('Rings', 'second_offset'),
+                            config.getint('Rings', 'third_offset')]
+            self.time_interval = config.getfloat('Animation', 'time_interval')
             self.ring_order = list(map(int, (config.get('Rings', 'order').split(','))))
             pin_selector = [board.D10, board.D12, board.D18, board.D21]
             pin_enumerator = ["10", "12", "18", "21"]
@@ -77,12 +81,12 @@ class StatusMonitor:
             printer_dict = printer.json()
             extruder_temp = str(printer_dict['temperature']['tool0']['actual'])
             extruder_given = str(printer_dict['temperature']['tool0']['target'])
-            self.extruder_temp = calulate_pos(240, extruder_temp, 20)
-            self.extruder_given = calulate_pos(240, extruder_given, 20)
+            self.extruder_temp = calulate_pos(self.extruder_max, extruder_temp, self.extruder_min)
+            self.extruder_given = calulate_pos(self.extruder_max, extruder_given, self.extruder_min)
             bed_temp = str(printer_dict['temperature']['bed']['actual'])
             bed_given = str(printer_dict['temperature']['bed']['target'])
-            self.bed_temp = calulate_pos(80, bed_temp, 23)
-            self.bed_given = calulate_pos(80, bed_given, 23)
+            self.bed_temp = calulate_pos(self.bed_max, bed_temp, self.bed_min)
+            self.bed_given = calulate_pos(self.bed_max, bed_given, self.bed_min)
 
         except:
             logging.warning("Moonraker printer api not responding")
@@ -170,8 +174,8 @@ class StatusMonitor:
             self.pixels.show()
 
 
-def calulate_pos(max, value, offset):
-    pos = (float(value) - offset) / (max - offset) * 16
+def calulate_pos(max, value, min):
+    pos = (float(value) - min) / (max - min) * 16
     if pos < 0:
         pos = 0
     return pos
