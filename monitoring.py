@@ -132,10 +132,9 @@ class StatusMonitor:
                 self.t.terminate()
 
             progress_color = self.status_to_color_dict[self.status]
-            if self.power_monitor:
-                if self.power_status == "off":
-                    for i in range(48):
-                        self.pixels[i - 1] = (0, 0, 0)
+            if self.power_monitor and self.power_status == "off":
+                for i in range(48):
+                    self.pixels[i - 1] = (0, 0, 0)
             else:
                 for i in range(16):
                     if self.bed_temp <= self.bed_given:
