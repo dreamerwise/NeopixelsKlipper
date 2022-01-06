@@ -14,7 +14,7 @@ class StatusMonitor:
 
     def __init__(self):
 
-        logging.basicConfig(format='%(asctime)s, %(levelname)s - %(message)s')
+        logging.basicConfig(format='%(asctime)s, %(levelname)s - %(message)s', level=logging.INFO)
 
         config = ConfigParser()
         configFile = "/home/pi/neopixels/monitoring.cfg"
@@ -87,7 +87,7 @@ class StatusMonitor:
                 self.power_status = str(power_dict['result']['printer'])
 
             except:
-                logging.warning("Moonraker power api not responding")
+                logging.info("Moonraker power api not responding")
 
         try:
             printer = requests.get("http://localhost:7125/api/printer")
@@ -102,7 +102,7 @@ class StatusMonitor:
             self.bed_given = calulate_pos(self.bed_max, bed_given, self.bed_min)
 
         except:
-            logging.warning("Moonraker printer api not responding")
+            logging.info("Moonraker printer api not responding")
 
         try:
             job = requests.get("http://localhost:7125/api/job")
@@ -110,7 +110,7 @@ class StatusMonitor:
             self.status = str(job_dict['state'])
 
         except:
-            logging.warning("Moonraker job api not responding")
+            logging.info("Moonraker job api not responding")
 
         try:
             job_progerss = requests.get("http://localhost:7125/printer/objects/query?virtual_sdcard=progress")
@@ -122,7 +122,7 @@ class StatusMonitor:
                 self.progress = float(progress) * 16
 
         except:
-            logging.warning("Moonraker printer object not responding")
+            logging.info("Moonraker printer object not responding")
 
         if self.extruder_temp == 0 and not self.t.is_alive():
                 self.t.start()
