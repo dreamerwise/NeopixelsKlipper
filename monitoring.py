@@ -63,10 +63,10 @@ class StatusMonitor:
 
         self.power_status = None
         self.status = None
-        self.bed_temp = 0
-        self.bed_given = 0
-        self.extruder_temp = 0
-        self.extruder_given = 0
+        self.bed_temp = None
+        self.bed_given = None
+        self.extruder_temp = None
+        self.extruder_given = None
         self.progress = 0
         self.num_pixels = 48
         self.status_to_color_dict = {
@@ -164,13 +164,13 @@ class StatusMonitor:
                 logging.info("Moonraker printer object not responding")
                 self.object_loger_svitch = False
 
-        if self.extruder_temp == 0 and not self.start_animation.is_alive():
+        if self.extruder_temp is None and not self.start_animation.is_alive():
             logging.info("Starting animation")
             self.start_animation.start()
 
     def update_pixels(self):
 
-        if self.extruder_temp != 0:
+        if self.extruder_temp is not None:
             if self.start_animation.is_alive():
                 logging.info("Stopping animation")
                 self.start_animation.terminate()
@@ -246,7 +246,7 @@ class StatusMonitor:
 def calulate_pos(max, value, min):
     pos = (float(value) - min) / (max - min) * 16
     if pos < 0:
-        pos = 0
+        pos = 1
     return pos
 
 
