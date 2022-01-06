@@ -245,8 +245,8 @@ class StatusMonitor:
 
 def calulate_pos(max, value, min):
     pos = (float(value) - min) / (max - min) * 16
-    if pos < 1:
-        pos = 1
+    if pos < 0:
+        pos = 0
     return pos
 
 
