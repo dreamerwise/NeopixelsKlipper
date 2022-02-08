@@ -40,6 +40,8 @@ class StatusMonitor:
             logging.info("Extruder heating color set to {}".format(self.extruder_heating_color))
             self.extruder_cooling_color = tuple(map(int, (config.get('Extruder', 'cooling_color')).split(',')))
             logging.info("Extruder cooling color set to {}".format(self.extruder_cooling_color))
+            self.ring_led_no = config.getint('Rings', 'ring_led_no')
+            logging.info("Number of leds per ring set to {}".format(self.ring_led_no))
             self.offsets = [config.getint('Rings', 'first_offset'),
                             config.getint('Rings', 'second_offset'),
                             config.getint('Rings', 'third_offset')]
@@ -68,7 +70,7 @@ class StatusMonitor:
         self.extruder_temp = None
         self.extruder_given = None
         self.progress = 0
-        self.num_pixels = 48
+        self.num_pixels = (3 * self.ring_led_no)
         self.status_to_color_dict = {
             'Operational': (255, 255, 255),
             'Printing': (0, 255, 0),
@@ -93,7 +95,7 @@ class StatusMonitor:
             pixel_order=neopixel.GRB
         )
 
-        for i in range(0, 47):
+        for i in range(0, (self.num_pixels - 1)):
             self.pixels[i] = (0, 0, 0)
         self.pixels.show()
 
@@ -119,12 +121,12 @@ class StatusMonitor:
             printer_dict = printer.json()
             extruder_temp = str(printer_dict['temperature']['tool0']['actual'])
             extruder_given = str(printer_dict['temperature']['tool0']['target'])
-            self.extruder_temp = calulate_pos(self.extruder_max, extruder_temp, self.extruder_min)
-            self.extruder_given = calulate_pos(self.extruder_max, extruder_given, self.extruder_min)
+            self.extruder_temp = calulate_pos(self.extruder_max, extruder_temp, self.extruder_min, self.ring_led_no)
+            self.extruder_given = calulate_pos(self.extruder_max, extruder_given, self.extruder_min, self.ring_led_no)
             bed_temp = str(printer_dict['temperature']['bed']['actual'])
             bed_given = str(printer_dict['temperature']['bed']['target'])
-            self.bed_temp = calulate_pos(self.bed_max, bed_temp, self.bed_min)
-            self.bed_given = calulate_pos(self.bed_max, bed_given, self.bed_min)
+            self.bed_temp = calulate_pos(self.bed_max, bed_temp, self.bed_min, self.ring_led_no)
+            self.bed_given = calulate_pos(self.bed_max, bed_given, self.bed_min, self.ring_led_no)
             if not self.printer_loger_svitch:
                 logging.info("Moonraker printer api connected")
                 self.printer_loger_svitch = True
@@ -178,7 +180,7 @@ class StatusMonitor:
             progress_color = self.status_to_color_dict[self.status]
             if self.power_monitor and self.power_status == "off":
                 if self.led_loger_svitch:
-                    for i in range(48):
+                    for i in range(self.num_pixels):
                         self.pixels[i - 1] = (0, 0, 0)
                     logging.info("Turning down led lights")
                     self.led_loger_svitch = False
@@ -186,85 +188,94 @@ class StatusMonitor:
                 if not self.led_loger_svitch:
                     logging.info("Displaing status of data")
                     self.led_loger_svitch = True
-                for i in range(16):
+                for i in range(led_no):
                     if self.bed_temp <= self.bed_given:
                         if i <= self.bed_temp:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
-                                    self.ring_order[0] * 16)] = self.bed_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[0]]) % self.ring_led_no) + (
+                                            self.ring_order[0] * self.ring_led_no)] = self.bed_color
                         elif i <= self.bed_given:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
-                                    self.ring_order[0] * 16)] = self.bed_heating_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[0]]) % self.ring_led_no) + (
+                                            self.ring_order[0] * self.ring_led_no)] = self.bed_heating_color
                         else:
                             self.pixels[
-                                ((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (
-                                0, 0, 0)
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[0]]) % self.ring_led_no) + (
+                                            self.ring_order[0] * self.ring_led_no)] = (0, 0, 0)
                     else:
                         if i <= self.bed_given:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
-                                    self.ring_order[0] * 16)] = self.bed_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[0]]) % self.ring_led_no) + (
+                                            self.ring_order[0] * self.ring_led_no)] = self.bed_color
                         elif i <= self.bed_temp:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[0]]) % 16) + (
-                                    self.ring_order[0] * 16)] = self.bed_cooling_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[0]]) % self.ring_led_no) + (
+                                            self.ring_order[0] * self.ring_led_no)] = self.bed_cooling_color
                         else:
                             self.pixels[
-                                ((15 - i + self.offsets[self.ring_order[0]]) % 16) + (self.ring_order[0] * 16)] = (
-                                0, 0, 0)
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[0]]) % self.ring_led_no) + (
+                                            self.ring_order[0] * self.ring_led_no)] = (0, 0, 0)
 
                     if self.extruder_temp <= self.extruder_given:
                         if i <= self.extruder_temp:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
-                                    self.ring_order[1] * 16)] = self.extruder_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[1]]) % self.ring_led_no) + (
+                                            self.ring_order[1] * self.ring_led_no)] = self.extruder_color
                         elif i <= self.extruder_given:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
-                                    self.ring_order[1] * 16)] = self.extruder_heating_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[1]]) % self.ring_led_no) + (
+                                            self.ring_order[1] * self.ring_led_no)] = self.extruder_heating_color
                         else:
                             self.pixels[
-                                ((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (
-                                0, 0, 0)
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[1]]) % self.ring_led_no) + (
+                                            self.ring_order[1] * self.ring_led_no)] = (0, 0, 0)
                     else:
                         if i <= self.extruder_given:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
-                                    self.ring_order[1] * 16)] = self.extruder_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[1]]) % self.ring_led_no) + (
+                                            self.ring_order[1] * self.ring_led_no)] = self.extruder_color
                         elif i <= self.extruder_temp:
-                            self.pixels[((15 - i + self.offsets[self.ring_order[1]]) % 16) + (
-                                    self.ring_order[1] * 16)] = self.extruder_cooling_color
+                            self.pixels[
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[1]]) % self.ring_led_no) + (
+                                            self.ring_order[1] * self.ring_led_no)] = self.extruder_cooling_color
                         else:
                             self.pixels[
-                                ((15 - i + self.offsets[self.ring_order[1]]) % 16) + (self.ring_order[1] * 16)] = (
-                                0, 0, 0)
+                                ((self.ring_led_no - 1 - i + self.offsets[self.ring_order[1]]) % self.ring_led_no) + (
+                                            self.ring_order[1] * self.ring_led_no)] = (0, 0, 0)
 
                     if i <= self.progress:
                         self.pixels[
-                            ((23 - i + self.offsets[self.ring_order[2]]) % 16) + (
-                                        self.ring_order[2] * 16)] = progress_color
+                            ((1.5 * self.ring_led_no - 1 - i + self.offsets[self.ring_order[2]]) % self.ring_led_no) + (
+                                        self.ring_order[2] * self.ring_led_no)] = progress_color
                     else:
-                        self.pixels[((23 - i + self.offsets[self.ring_order[2]]) % 16) + (self.ring_order[2] * 16)] = (
-                            0, 0, 0)
+                        self.pixels[
+                            ((1.5 * self.ring_led_no - 1 - i + self.offsets[self.ring_order[2]]) % self.ring_led_no) + (
+                                        self.ring_order[2] * self.ring_led_no)] = (0, 0, 0)
             self.pixels.show()
 
 
-def calulate_pos(max, value, min):
-    pos = (float(value) - min) / (max - min) * 16
+def calulate_pos(max, value, min, led_no):
+    pos = (float(value) - min) / (max - min) * led_no
     if pos < 0:
         pos = 0
     return pos
 
 
-def waiting(interval, pixels):
+def waiting(interval, pixels, led_no):
     colorlist = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 
     for i in range(3):
-        for j in range(16):
-            pixel = ((15 - j) % 16)
+        for j in range(led_no):
+            pixel = (((led_no - 1) - j) % led_no)
             pixels[pixel] = colorlist[i]
-            pixels[pixel + 16] = colorlist[i]
-            pixels[pixel + 32] = colorlist[i]
+            pixels[pixel + led_no] = colorlist[i]
+            pixels[pixel + (led_no * 2)] = colorlist[i]
             pixels[pixel + 1] = (0, 0, 0)
-            pixels[pixel + 17] = (0, 0, 0)
+            pixels[pixel + led_no + 1] = (0, 0, 0)
             if j == 0:
                 pixels[0] = (0, 0, 0)
             else:
-                pixels[pixel + 33] = (0, 0, 0)
+                pixels[pixel + (led_no * 2) + 1] = (0, 0, 0)
             pixels.show()
             time.sleep(interval)
     colorbase = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
@@ -276,7 +287,7 @@ def waiting(interval, pixels):
                     color = tuple(col * j for col in colorbase[i])
                 else:
                     color = tuple((col * (511 - j)) for col in colorbase[i])
-                for k in range(48):
+                for k in range(3 * led_no):
                     pixels[k] = color
                 pixels.show()
                 time.sleep(interval / 100)
