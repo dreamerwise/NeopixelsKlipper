@@ -99,7 +99,7 @@ class StatusMonitor:
             self.pixels[i] = (0, 0, 0)
         self.pixels.show()
 
-        self.start_animation = multiprocessing.Process(target=waiting, args=(self.time_interval, self.pixels))
+        self.start_animation = multiprocessing.Process(target=waiting, args=(self.time_interval, self.pixels, self.ring_led_no))
 
     def check_status(self):
 
@@ -188,7 +188,7 @@ class StatusMonitor:
                 if not self.led_loger_svitch:
                     logging.info("Displaing status of data")
                     self.led_loger_svitch = True
-                for i in range(led_no):
+                for i in range(self.ring_led_no):
                     if self.bed_temp <= self.bed_given:
                         if i <= self.bed_temp:
                             self.pixels[
@@ -245,11 +245,11 @@ class StatusMonitor:
 
                     if i <= self.progress:
                         self.pixels[
-                            ((1.5 * self.ring_led_no - 1 - i + self.offsets[self.ring_order[2]]) % self.ring_led_no) + (
+                            (int(1.5 * self.ring_led_no - 1 - i + self.offsets[self.ring_order[2]]) % self.ring_led_no) + (
                                         self.ring_order[2] * self.ring_led_no)] = progress_color
                     else:
                         self.pixels[
-                            ((1.5 * self.ring_led_no - 1 - i + self.offsets[self.ring_order[2]]) % self.ring_led_no) + (
+                            (int(1.5 * self.ring_led_no - 1 - i + self.offsets[self.ring_order[2]]) % self.ring_led_no) + (
                                         self.ring_order[2] * self.ring_led_no)] = (0, 0, 0)
             self.pixels.show()
 
